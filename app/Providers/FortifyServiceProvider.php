@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
+use App\Actions\Fortify\AuthenticateAndLogUser; // <-- Import your custom class
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,9 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+    
+        Fortify::authenticateUsing(new AuthenticateAndLogUser());
+
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);

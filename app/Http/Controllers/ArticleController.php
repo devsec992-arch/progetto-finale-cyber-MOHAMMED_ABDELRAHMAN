@@ -52,7 +52,7 @@ class ArticleController extends Controller implements HasMiddleware
             'category' => 'required',
             'tags' => 'required'
         ]);
-
+      log::info('Creating new article with title: ' . $request->title . ' by user: ' . Auth::user()->email);
         $article = Article::create([
             'title' => $request->title,
             'subtitle' => $request->subtitle,
@@ -111,7 +111,7 @@ class ArticleController extends Controller implements HasMiddleware
             'category' => 'required',
             'tags' => 'required'
         ]);
-
+    log::info('Updating article with title: ' . $request->title . ' by user: ' . Auth::user()->email);
         $article->update([
             'title' => $request->title,
             'subtitle' => $request->subtitle,
@@ -154,6 +154,7 @@ class ArticleController extends Controller implements HasMiddleware
         foreach ($article->tags as $tag) {
             $article->tags()->detach($tag);
         }
+        log::info('Deleting article with title: ' . $article->title . ' by user: ' . Auth::user()->email);
         $article->delete();
         
         return redirect()->back()->with('message', 'Articolo cancellato con successo');

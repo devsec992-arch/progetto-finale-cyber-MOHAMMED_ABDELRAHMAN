@@ -50,11 +50,12 @@ class AdminController extends Controller
             echo 'Errore: ' . $e->getMessage();
             // Puoi anche registrare l'errore in un log file o eseguire altre azioni di recupero
         }
-        
+        log::info('Admin dashboard accessed by user: ' . Auth::user()->email);
         return view('admin.dashboard', compact('adminRequests', 'revisorRequests', 'writerRequests','financialData'));
     }
 
     public function setAdmin(User $user){
+        log::info('Setting user ' . $user->email . ' as administrator by admin: ' . Auth::user()->email);
         $user->is_admin = true;
         $user->save();
 
@@ -62,6 +63,7 @@ class AdminController extends Controller
     }
 
     public function setRevisor(User $user){
+        log::info('Setting user ' . $user->email . ' as revisor by admin: ' . Auth::user()->email);
         $user->is_revisor = true;
         $user->save();
 

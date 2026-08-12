@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
+use illuminate\Support\Facades\Log;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -30,6 +31,7 @@ class CreateNewUser implements CreatesNewUsers
             ],
             'password' => $this->passwordRules(),
         ])->validate();
+        log::info('Creating new user with email: ' . $input['email']);
 
         return User::create([
             'name' => $input['name'],
