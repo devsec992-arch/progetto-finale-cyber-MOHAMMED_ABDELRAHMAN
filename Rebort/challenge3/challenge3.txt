@@ -1,0 +1,56 @@
+=================================================================
+       CHALLENGE 3: LOGGING DELLE OPERAZIONI CRITICHE (AUDIT)
+=================================================================
+Data: 2026-08-12
+Obiettivo: Garantire i principi di accountability e non-repudiation,
+           consentendo l'identificazione di attori di minaccia e 
+           tracciando ogni azione sensibile 
+
+-----------------------------------------------------------------
+1. TRACCIAMENTO EVENTI DI AUTENTICAZIONE
+-----------------------------------------------------------------
+- Login (Successo / Fallito): Intercettato tramite callback in 
+  FortifyServiceProvider. Registra l'email inserita e l'IP mittente.
+  * Log::info/warning("CRITICAL_AUTH [LOGIN...]: Email [...] from IP [...]")
+- Registrazione: Inserito direttamente nell'azione di creazione in 
+  app/Actions/Fortify/CreateNewUser.php per tracciare i nuovi utenti.
+  * Log::info("CRITICAL_AUTH [REGISTER]: New User ID [...] from IP [...]")
+- Logout: Inserito nel controller di gestione sessione/uscita.
+  * Log::info("CRITICAL_AUTH [LOGOUT]: User [...] from IP [...]")
+
+-----------------------------------------------------------------
+2. TRACCIAMENTO CICLO DI VITA DEGLI ARTICOLI
+-----------------------------------------------------------------
+Implementato direttamente all'interno dei metodi del controller 
+dedicato (ArticleController.php) per associare ogni mutazione 
+all'utente autenticato e al suo indirizzo IP d'origine:
+- Creazione Articolo (store):
+  * Log::info("CRITICAL_ARTICLE [CREATE]: Article ID [...] by User ID [...] from IP [...]")
+- Modifica Articolo (update):
+  * Log::info("CRITICAL_ARTICLE [UPDATE]: Article ID [...] by User ID [...] from IP [...]")
+- Eliminazione Articolo (destroy):
+  * Log::warning("CRITICAL_ARTICLE [DELETE]: Article ID [...] by User ID [...] from IP [...]")
+
+-----------------------------------------------------------------
+3. TRACCIAMENTO CAMBIAMENTI E ASSEGNAZIONI DI RUOLO
+-----------------------------------------------------------------
+Inserito nei moduli amministrativi di gestione dei permessi utente 
+per blindare il controllo sulle scalate di privilegio:
+- Modifica Ruolo (updateRole):
+  * Log::warning("CRITICAL_ROLE [CHANGE]: User ID [...] role changed from [...] to [...] by Admin ID [...] from IP [...]")
+-----------------------------------------------------------------
+4. IMPLEMENTAZIONE RATE LIMITER GLOBALE
+-----------------------------------------------------------------
+- Definizione in app/Providers/AppServiceProvider.php (metodo boot):
+  * RateLimiter::for('global', function (Request $request) {
+        return Limit::perMinute(150)->by($request->ip());
+    });
+- Registrazione in bootstrap/app.php per applicazione trasversale:
+  * $middleware->web(append: ['throttle:global']);
+
+
+=================================================================
+
+
+FINE DEL RAPPORTO - CHALLENGE 3
+=================================================================
