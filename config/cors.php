@@ -19,15 +19,17 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+'allowed_origins' => [
+    config('app.url'),],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['x-requested-with', 'content-type', 'accept', 'origin', 'authorization',
+     'x-csrf-token'],
 
     'exposed_headers' => [],
 
-    'max_age' => 0,
+    'max_age' => 60,
 
     'supports_credentials' => true,
 

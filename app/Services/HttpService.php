@@ -4,6 +4,8 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class HttpService
 {
@@ -11,7 +13,7 @@ class HttpService
     protected $allowedDomains = ['internal.finance','newsapi.org'];
     protected $allowedProtocols = ['http', 'https'];
     protected $refererHeader; // Intestazione Referer
-
+   
     public function __construct()
     {
         $this->refererHeader = config('app.url');
@@ -20,6 +22,7 @@ class HttpService
 
     public function getRequest($url)
     {
+        
         $parsedUrl = parse_url($url);
 
         // Validate protocol
@@ -31,6 +34,20 @@ class HttpService
         if (!isset($parsedUrl['host']) || !in_array($parsedUrl['host'], $this->allowedDomains)) {
             return 'Domain not allowed';
         }
+
+        if ($parsedUrl['host'] === 'internal.finance') {
+            if (!Auth::check() || Auth::user()->role !== 'is_admin') {
+                $email = Auth::check() ? Auth::user()->email : 'Guest';
+                
+                Log::alert("SSRF_ROLE_VIOLATION: user email [{$email}]  attempted to force a server request to internal.finance from IP [" . request()->ip() . "]");
+                
+                
+                abort(403, 'Access Denied: You do not have the required administrator privileges.');
+            }
+        }
+
+
+
 
         // Aggiungi l'intestazione Referer per le richieste al server locale
         $options['headers'] = ['Referer' => $this->refererHeader];
