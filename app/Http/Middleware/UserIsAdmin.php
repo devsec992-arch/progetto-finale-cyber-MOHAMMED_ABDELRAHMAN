@@ -15,7 +15,8 @@ class UserIsAdmin
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
-    {
+    {    
+         //dd(Auth::check(), Auth::user()?->is_admin, Auth::user());
         if(Auth::user() && Auth::user()->is_admin){
             return $next($request);
         }

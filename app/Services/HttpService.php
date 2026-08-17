@@ -36,7 +36,8 @@ class HttpService
         }
 
         if ($parsedUrl['host'] === 'internal.finance') {
-            if (!Auth::check() || Auth::user()->role !== 'is_admin') {
+            if (!Auth::check() || !Auth::user()->is_admin) {
+ {
                 $email = Auth::check() ? Auth::user()->email : 'Guest';
                 
                 Log::alert("SSRF_ROLE_VIOLATION: user email [{$email}]  attempted to force a server request to internal.finance from IP [" . request()->ip() . "]");
@@ -59,4 +60,5 @@ class HttpService
             return 'Something went wrong: ' . $e->getMessage();
         }
     }
+}
 }

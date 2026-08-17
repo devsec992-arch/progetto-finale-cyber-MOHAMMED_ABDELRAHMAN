@@ -53,10 +53,12 @@ class ArticleController extends Controller implements HasMiddleware
             'tags' => 'required'
         ]);
       log::info('Creating new article with title: ' . $request->title . ' by user: ' . Auth::user()->email);
-        $article = Article::create([
+      $allowedTags = '<p><strong><b><em><i><br><ul><ol><li>'; 
+      $article = Article::create([
             'title' => $request->title,
             'subtitle' => $request->subtitle,
-            'body' => $request->body,
+
+            'body' => strip_tags($request->body, $allowedTags),
             'image' => $request->file('image')->store('public/images'),
             'category_id' => $request->category,
             'user_id' => Auth::user()->id,

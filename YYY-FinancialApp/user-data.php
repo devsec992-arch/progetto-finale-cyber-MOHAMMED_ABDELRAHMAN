@@ -2,13 +2,12 @@
 
 $allowedOrigin = 'http://cyber.blog:8000';
 $allowedIp = ['127.0.0.1','::1'];
-
+/*
 if (!isset($_SERVER['HTTP_REFERER']) || $_SERVER['HTTP_REFERER'] !== $allowedOrigin || !in_array($_SERVER['REMOTE_ADDR'],$allowedIp)) {
     http_response_code(403);
     echo json_encode(['error' => 'Unauthorized']);
     exit;
-}
-
+}*/
 header('Content-Type: application/json');
 
 // Percorso del file JSON
@@ -38,3 +37,5 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 echo json_encode($data);
 
 ?>
+
+

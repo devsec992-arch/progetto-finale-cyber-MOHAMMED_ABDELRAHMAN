@@ -24,13 +24,20 @@ class AdminController extends Controller
         $adminRequests = User::where('is_admin', NULL)->get();
         $revisorRequests = User::where('is_revisor', NULL)->get();
         $writerRequests = User::where('is_writer', NULL)->get();
+            
+
 
         //$financialData = json_decode($this->httpService->getRequest('http://localhost:8001/financialApp/user-data.php'));
-        
+            $financialData = ['users' => []]; 
+
         try {
+
+
+        
             // Effettua la richiesta HTTP
+
             $response = $this->httpService->getRequest('http://internal.finance:8001/user-data.php');
-            // Controlla se la risposta è vuota o non valida
+            
             if (empty($response)) {
                 throw new Exception('La risposta dalla richiesta HTTP è vuota.');
             }
@@ -48,6 +55,8 @@ class AdminController extends Controller
         } catch (Exception $e) {
             // Gestisci l'eccezione
             echo 'Errore: ' . $e->getMessage();
+       
+            
             // Puoi anche registrare l'errore in un log file o eseguire altre azioni di recupero
         }
         log::info('Admin dashboard accessed by user: ' . Auth::user()->email);

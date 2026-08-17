@@ -1,0 +1,36 @@
+
+
+              CHALLENGE 5: Validazione contenuto articolo non presente o non corretta
+Applicazione: CyberBlog (Laravel)
+Ambiente: Locale (http://cyber.blog:8000)
+Data: Agosto 2026
+Stato Finale: RISOLTO / MESSO IN SICUREZZA
+
+--------------------------------------------------
+1. FASE DI ANALISI E RILEVAMENTO DELLA VULNERABILITÀ
+--------------------------------------------------
+- Analisi del Controller iniziale: Il metodo `store` validava il campo `body` solo per la lunghezza minima (`required|min:10`) e lo passava direttamente al database tramite `Article::create()` senza alcuna sanitizzazione.
+- Verifica del rendering Blade: L'uso di tag non protetti `{!! $article->body !!}` consentiva l'interpretazione diretta di codice HTML/JavaScript.
+- Test di Injection (Proof of Concept):
+  * Test con payload basilari ed eventi HTML malevoli per forzare la rottura degli attributi o l'esecuzione di script:
+    <img src=x onerror=alert(document.cookie)>
+- Verifica dello strato infrastrutturale: È stato confermato che la direttiva `SESSION_HTTP_ONLY=true` nel file di configurazione `config/session.php` proteggeva le sessioni dal furto diretto tramite `document.cookie`, sebbene non impedisse la manipolazione del DOM o l'esecuzione dello script in sé.
+
+--------------------------------------------------
+2. FASE DI VALUTAZIONE DELLE SOLUZIONI
+--------------------------------------------------
+- Tentativo con l'escaping totale (`{{ $article->body }}`): Ha bloccato con successo l'XSS trasformando i caratteri speciali in entità HTML, ma ha causato la visualizzazione letterale dei tag a schermo (es. i tag `<p>` e `&nbsp;` apparivano come testo visibile).
+- Valutazione delle alternative di sanitizzazione: Scartati i pacchetti esterni complessi, si è optato per una soluzione nativa ed efficiente basata su PHP.
+
+--------------------------------------------------
+3. FASE DI CORREZIONE E REMEDIATION (SOLUZIONE DEFINITIVA)
+--------------------------------------------------
+- Implementazione della Allowlist di tag sicuri:
+  È stata definita la stringa dei tag consentiti per preservare la formattazione di base del blog senza rischi:
+  $allowedTags = '<p><strong><b><em><i><br><ul><ol><li>';
+- Modifica del Controller (Metodi `store` e `update`):
+  Applicazione della funzione nativa `strip_tags()` con la whitelist direttamente sull'assegnazione del `body`:
+  'body' => strip_tags($request->body, $allowedTags),
+- Risultato nel database: Qualsiasi script non autorizzato o attributo di evento pericoloso (`script`, `onerror`) viene rimosso alla fonte prima della scrittura su disco.
+- Configurazione del Frontend (Blade):
+  Nelle viste associate è stato ripristinato l'output raw `{!! $article->body !!}` per consentire il corretto rendering grafico dei paragrafi e dei testi formattati in totale sicurezza.
