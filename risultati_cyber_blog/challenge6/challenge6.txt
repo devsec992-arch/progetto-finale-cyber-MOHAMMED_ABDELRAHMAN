@@ -1,0 +1,32 @@
+================================================================================
+RAPPORTO TECNICO DI MITIGAZIONE - SICUREZZA WEB (LARAVEL)
+================================================================================
+Oggetto: Risoluzione Vulnerabilità Mass Assignment e Privilege Escalation
+Data: 16/08/2026
+Stato: RISOLTO / MITIGATO
+
+1. SINTESI DEL PROBLEMA
+L'endpoint di aggiornamento del profilo utente risultava originariamente 
+vulnerabile ad attacchi di Mass Assignment (Privilege Escalation). Un utente 
+poteva manipolare il payload della richiesta HTTP (es. iniettando campi booleani 
+come 'is_admin = 1') per alterare i privilegi di sistema tramite l'assegnazione 
+indiscriminata dei dati in fase di update.
+
+2. AZIONI DI MITIGAZIONE IMPLEMENTATE
+- Whitelisting sul Modello (User.php):
+  La proprietà $fillable è stata ristretta ai soli campi operativi di pertinenza 
+  dell'utente, escludendo rigorosamente i flag di ruolo e di amministrazione:
+  
+  protected $fillable = [
+      'name',
+      'email',
+      'password',
+  ];
+
+3. ESITO E VERIFICA
+Qualsiasi parametro estraneo o non autorizzato eventualmente presente nel 
+payload della richiesta viene scartato a monte in fase di validazione e filtrato 
+automaticamente a livello di Eloquent ORM. 
+
+
+================================================================================
