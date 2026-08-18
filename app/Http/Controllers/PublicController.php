@@ -59,6 +59,7 @@ class PublicController extends Controller implements HasMiddleware
         }
 
         $user->update();
+        log::info('Career request submitted by user: ' . $user->email . ' ip: ' . $request->ip());
         return redirect(route('homepage'))->with('message', 'Mail inviata con successo!');
     }
 }

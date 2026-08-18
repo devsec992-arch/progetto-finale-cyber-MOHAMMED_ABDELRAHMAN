@@ -1,0 +1,38 @@
+
+### ID CHALLENGE : Challenge 2 - Operazioni Critiche in GET
+VULNERABILITÀ: CWE-352 / CWE-650 (Cross-Site Request Forgery)
+SISTEMA      : Applicazione cyber.blog
+GRAVITÀ      : Alta (High)
+STATO        : RISOLTO
+
+1. DESCRIZIONE DELLA VULNERABILITÀ
+L'applicazione utilizzava il metodo HTTP GET per eseguire operazioni critiche di modifica dello stato del sistema, nello specifico la gestione e l'assegnazione dei ruoli amministrativi degli utenti (es. /admin/{user}/set-admin).
+
+Il protocollo HTTP definisce i metodi GET come "sicuri" e "idempotenti", ovvero destinati esclusivamente alla lettura dei dati. L'utilizzo di GET per azioni distruttive o di configurazione viola i principi di progettazione sicura e disattiva i controlli automatici del framework. 
+
+1. IDENTIFICATORI E NUMERI DELLA VULNERABILITÀ
+
+* CWE-352: Cross-Site Request Forgery (CSRF)
+* CWE-650: Trusting HTTP Permission Methods on the Server Side
+* OWASP Top 10 (A01:2021): Broken Access Control (Posizione n. 1 della classifica globale)
+* OWASP Top 10 (A04:2021): Insecure Design (Posizione n. 4 della classifica globale)
+
+1. IMPATTO E SCENARIO D'ATTACCO (RISCHIO)
+L'assenza di vincoli sul metodo HTTP permetteva il bypass completo della protezione CSRF (CWE-352). Il middleware nativo di Laravel ('VerifyCsrfToken') esclude volutamente le richieste GET dalle verifiche dei token.
+
+Un utente malintenzionato avrebbe potuto sfruttare la sessione attiva di un amministratore autenticato tramite tecniche di ingegneria sociale o Cross-Site Scripting (XSS). Inserendo un payload nascosto (es. ) in un commento o in un sito esterno, il browser dell'amministratore avrebbe eseguito la richiesta in background a sua insaputa, promuovendo l'attaccante a privilegi amministrativi elevati. 
+
+1. SOLUZIONE APPLICATA (REMEDIATION)
+La vulnerabilità è stata mitigata con successo implementando una ristrutturazione architetturale in due fasi:
+
+A. Correzione delle Rotte (routes/web.php):
+Il metodo di ricezione è stato convertito da GET a PATCH per garantire la corretta semantica REST per la modifica parziale delle risorse:
+Route::patch('/admin/{user}/set-admin', [AdminController::class, 'setAdmin'])->name('admin.setAdmin');
+Route::patch('/admin/{user}/set-revisor', [AdminController::class, 'setRevisor'])->name('admin.setRevisor');
+Route::patch('/admin/{user}/set-writer', [AdminController::class, 'setWriter'])->name('admin.setWriter'); 
+
+B. Correzione delle Viste Blade (.blade.php):
+Tutti i link diretti (tag ) sono stati rimossi e sostituiti con form HTML espliciti che integrano le direttive di sicurezza di Laravel: 
+
+1. CONCLUSIONI E VERIFICA
+A seguito delle modifiche, i tentativi di accesso diretto tramite URL (GET) restituiscono ora lo stato di errore HTTP 405 (Method Not Allowed). Qualsiasi richiesta formale priva di token CSRF valido viene intercettata dal framework con un errore HTTP 419 (Page Expired). Il sistema è ora protetto contro attacchi di tipo CSRF sulle funzionalità prese in esame.

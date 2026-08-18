@@ -1,9 +1,11 @@
-================================================================================
-RAPPORTO TECNICO DI MITIGAZIONE - SICUREZZA WEB (LARAVEL)
-================================================================================
-Oggetto: Risoluzione Vulnerabilità Mass Assignment e Privilege Escalation
-Data: 16/08/2026
-Stato: RISOLTO / MITIGATO
+-----------------------------------------------------------------------------------------------------
+ID CHALLENGE : Challenge 6 
+Vulnerabilità Mass Assignment e Privilege EscalationVULNERABILITÀ:
+ CWE-915 (Mass Assignment / Improper Attribute Modification)
+SISTEMA: Applicazione Web cyberblog ,internal.admin
+ GRAVITÀ  : Alta (High)STATO FINALE 
+RISOLTO / MITIGATO
+----------------------------------------------------------------------------------------------------
 
 1. SINTESI DEL PROBLEMA
 L'endpoint di aggiornamento del profilo utente risultava originariamente 

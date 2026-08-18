@@ -94,6 +94,7 @@ class ArticleController extends Controller implements HasMiddleware
      */
     public function edit(Article $article)
     {
+        
         if(Auth::user()->id != $article->user_id){
             return redirect()->route('homepage')->with('alert', 'Accesso non consentito');
         }
@@ -173,6 +174,7 @@ class ArticleController extends Controller implements HasMiddleware
     }
 
     public function articleSearch(Request $request){
+        log::info('Searching articles with query: ' . $request->input('query') . ' by user: '  . ' from IP: ' . $request->ip());
         $query = $request->input('query');
         $articles = Article::search($query)->where('is_accepted', true)->orderBy('created_at', 'desc')->get();
         return view('articles.search-index', compact('articles', 'query'));

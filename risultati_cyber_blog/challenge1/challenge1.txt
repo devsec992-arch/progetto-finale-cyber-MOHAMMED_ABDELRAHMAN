@@ -1,0 +1,109 @@
+===============================================================================
+                       RAPPORTO TECNICO DI SICUREZZA INFORMATICA
+                  
+
+
+                       Tester: Mohammed Abdelrahman
+-------------------------------------------------------------------------------
+📌 CHALLENGE 1: Mancanza di Limitazione della Frequenza delle Richieste
+                (Rate Limiting Missing)
+-------------------------------------------------------------------------------
+
+1. SCENARIO E ANALISI DELLA VULNERABILITÀ
+===============================================================================
+* Nome della Vulnerabilità: Mancanza di Limitazione della Frequenza delle 
+                            Richieste (Rate Limiting Missing)
+* Classificazione Internazionale: 
+  - CWE-770: Allocazione di Risorse senza Limiti o Throttling
+  - CWE-400: Esaurimento delle Risorse Non Controllato
+  - OWASP Top 10: A04:2021-Insecure Design
+
+Descrizione del problema:  
+L'endpoint critico di ricerca `/articles/search` dell'applicazione 
+http://cyber.blog:8000 risulta privo di qualsiasi meccanismo di controllo 
+sul volume e sulla frequency del traffico in ingresso. Questa lacuna 
+architetturale permette a un singolo client di inviare flussi indiscriminati 
+di richieste computazionalmente onerose (come query basate su stringhe casuali 
+di grandi dimensioni). Poiché il backend è costretto a elaborare ogni singola 
+interrogazione interfacciandosi con il database, l'infrastruttura si espone a 
+un imminente attacco di tipo Application-layer Denial of Service (DoS), con 
+conseguente saturazione della CPU, della memoria e il crash del servizio.
+
+
+2. IMPLEMENTAZIONE DELL'ATTACCO (FASE 1)
+===============================================================================
+Per verificare sul campo la vulnerabilità, è stato concepito un attacco DoS 
+volumetrico e computazionale semplificato. Tramite uno script automatizzato 
+in ambiente Bash, sono state iniettate richieste HTTP GET simultanee sfruttando 
+la concorrenza asincrona (operatore '&'). Ciascuna richiesta interroga la rotta 
+tramite parametri concatenati a una stringa statica per massimizzare lo sforzo 
+di calcolo della funzione di ricerca, mantenendo l'URL pulito ed evitando 
+blocchi locali di sistema.
+
+Codice dell'Attacco (Dos_search.sh):
+-------------------------------------------------------------------------------
+
+
+Verifica del Successo dell'Attacco:
+L'output iniziale ha registrato una totale elaborazione indiscriminata delle 
+richieste in parallelo (HTTP Status 200). Successivamente, il volume massiccio 
+di richieste senza filtri ha portato alla saturazione totale dei thread 
+dell'applicazione, causando un Denial di Service applicativo visibile tramite 
+l'interruzione improvvisa della connessione TCP.
+
+Terminale locale con output dei codici HTTP 200 
+
+mid0@MacBook-Air-di-Mid0 final-project % ./dos_search.sh
+=== Avvio Attacco DoS Semplificato su http://cyber.blog:8000/articles/search ===
+Richiesta 442 -> HTTP Status: 200
+Richiesta 441 -> HTTP Status: 200
+Richiesta 440 -> HTTP Status: 200
+...
+
+
+Esito del Test:
+Il server ha subito un collasso computazionale evidente. Prima dell'impatto 
+distruttivo l'applicazione rispondeva passivamente con "HTTP Status: 200" per 
+centinaia di chiamate, per poi cessare bruscamente le comunicazioni sollevando 
+l'errore "Empty reply from server". Questo valida la presenza della vulnerabilità.
+
+
+3. IMPLEMENTAZIONE DELLA MITIGAZIONE
+===============================================================================
+La bonifica della vulnerabilità richiede l'introduzione di una barriera di 
+controllo del traffico a livello perimetrale (by middleware). È stata applicata 
+una policy restrittiva di Rate Limiting sul backend, vincolando l'endpoint a 
+un tetto massimo di 10 richieste al minuto per singolo indirizzo IP prima di 
+interrompere il flusso delle computazioni.
+
+
+
+4. VERIFICA POST-MITIGAZIONE (FASE 2)
+===============================================================================
+Una volta attivata la patch nel file delle rotte di backend ed eseguito il 
+comando di pulizia dei moduli cache ("php artisan route:clear"), lo script di 
+attacco DoS ("Dos_search.sh") è stato rieseguito per validare l'efficacia 
+delle contromisure adottate.
+
+Risultati del Secondo Attacco:
+L'azione del middleware nativo di Laravel ha intercettato immediatamente il 
+traffico anomalo. A partire dall'undicesimo tentativo consecutivo inviato dal 
+medesimo indirizzo IP nel medesimo minuto, l'applicazione ha rifiutato le 
+richieste in eccesso droppando i payload in ingresso.
+
+ Terminale con i codici HTTP 429 generati dal blocco]
+
+mid0@MacBook-Air-di-Mid0 final-project % ./dos_search.sh
+=== Avvio Attacco DoS Semplificato su http://cyber.blog ===
+Richiesta 1 -> HTTP Status: 200
+...
+Richiesta 10 -> HTTP Status: 200
+Richiesta 11 -> HTTP Status: 429
+Richiesta 12 -> HTTP Status: 429
+Richiesta 13 -> HTTP Status: 429
+...
+Richiesta 500 -> HTTP Status: 429
+=== Attacco Completato ===
+
+                           FINE CAPITOLO CHALLENGE 1
+===============================================================================

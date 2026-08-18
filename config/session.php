@@ -34,7 +34,7 @@ return [
 
     'lifetime' => env('SESSION_LIFETIME', 120),
 
-    'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
+    'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -182,8 +182,8 @@ return [
     |
     */
 
-    //'http_only' => env('SESSION_HTTP_ONLY', true),
-    'http_only' => true,
+    'http_only' => env('SESSION_HTTP_ONLY', true),
+    // 'http_only' => true,
 
 
     /*

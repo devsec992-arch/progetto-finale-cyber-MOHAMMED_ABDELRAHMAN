@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 use Illuminate\Http\Request;
 
@@ -41,9 +42,10 @@ public function edit()
         if ($request->filled('password')) {
         $user->password = Hash::make($request->password);
          }
+         log::info('Updating user profile for user: ' . $user->email . ' with new name: ' . $user->name . ' and new email: ' . $user->email);
 
         $user->update();
-        dd($user->is_admin); // Debug: Controlla il valore di is_admin dopo l'aggiornamento
+      //  dd($user->is_admin); // Debug: Controlla il valore di is_admin dopo l'aggiornamento
 
         return redirect()->route('profile.show')->with('success', 'Profile updated successfully.');
     }

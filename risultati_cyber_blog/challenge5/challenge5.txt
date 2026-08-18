@@ -1,10 +1,8 @@
-
-
-              CHALLENGE 5: Validazione contenuto articolo non presente o non corretta
-Applicazione: CyberBlog (Laravel)
-Ambiente: Locale (http://cyber.blog:8000)
-Data: Agosto 2026
-Stato Finale: RISOLTO / MESSO IN SICUREZZA
+ID CHALLENGE : Challenge 5 - Validazione Contenuto Articolo e Stored
+ XSSVULNERABILITÀ: CWE-79 / CWE-116 (Stored Cross-Site Scripting)
+SISTEMA : Applicazione Web CyberBlog    
+GRAVITÀ : Alta (High)
+STATO FINALE : RISOLTO / MESSO IN SICUREZZA
 
 --------------------------------------------------
 1. FASE DI ANALISI E RILEVAMENTO DELLA VULNERABILITÀ

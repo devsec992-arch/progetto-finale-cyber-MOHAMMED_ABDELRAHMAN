@@ -6,7 +6,18 @@ Obiettivo: Garantire i principi di accountability e non-repudiation,
            consentendo l'identificazione di attori di minaccia e 
            tracciando ogni azione sensibile 
 
+
+
+ Challenge 3 - Logging delle Operazioni Critiche (Audit)VULNERABILITÀ:
+ CWE-778 (Insufficient Logging)
+SISTEMA      : Applicazione cyberblog
+GRAVITÀ      : Media (Medium)STATO     
+RISOLTO
 -----------------------------------------------------------------
+
+
+
+
 1. TRACCIAMENTO EVENTI DI AUTENTICAZIONE
 -----------------------------------------------------------------
 - Login (Successo / Fallito): Intercettato tramite callback in 
