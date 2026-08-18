@@ -1,0 +1,62 @@
+=================================================================
+ID CHALLENGE : Challenge 4 - Mitigazione Manomissione Input, SSRF e CORSVULNERABILITÀ:
+ CWE-918 (Server-Side Request Forgery) / CWE-284 / CWE-942SISTEMA      : 
+Applicazione Web Laravel (Componenti Livewire e Servizi)
+GRAVITÀ: Critica (Critical)
+ RISOLTO
+
+
+
+
+
+
+
+=================================================================
+Obiettivo: Rimodellare la funzionalità delle news recenti per impedire
+           attacchi SSRF (Server-Side Request Forgery) e blindare
+           l'accesso basandosi sui ruoli (Admin vs Writer) e CORS.
+----------------------------------------------------------------------
+IMPATTO E RISCHIO (SECURITY IMPACT)La vulnerabilità SSRF permette a un utente malintenzionato di scansionare e mappare la rete interna del server, accedendo a servizi locali non esposti su Internet (come database interni o pannelli di amministrazione sulla porta 8001).Il mancato controllo dei ruoli nel Service Layer consente l'esfiltrazione o la manipolazione di dati finanziari interni riservati da parte di account compromessi o non autorizzati.La misconfiguration CORS espone gli utenti a scenari di furto di sessione e lettura dei dati sensibili direttamente dal browser nel momento in cui visitano un sito web malevolo controllato dall'attaccante.
+
+
+-----------------------------------------------------------------
+1. PROTEZIONE COMPONENTE LIVEWIRE (app/Livewire/LatestNews.php)
+-----------------------------------------------------------------
+- Rilevamento della Manomissione: Rimosso il trust cieco sul parametro 
+  $selectedApi modificato tramite gli strumenti "Ispeziona elemento".
+- Validazione Host tramite parse_url: Il componente estrae l'host 
+  dall'URL fornito e lo verifica contro una blacklist rigorosa di 
+  indirizzi di loopback e subnet private locali (es. porta 8001).
+- Se l'host intercettato fa parte di domini locali (127.0.0.1, localhost, 
+  subnet 192.168.* o 10.*), l'operazione viene bloccata sul nascere, 
+  restituendo un messaggio di errore ed emettendo un log di sicurezza:
+  * Log::warning("SSRF_ATTACK_BLOCKED: Attempted raw access to internal host...")
+
+-----------------------------------------------------------------
+2. SEPARAZIONE DEI PRIVILEGI NEL SERVICE LAYER (app/Services/HttpService.php)
+-----------------------------------------------------------------
+- Controllo degli Accessi Basato sui Ruoli Il metodo getRequest() 
+  è stato aggiornato per proteggere i canali sensibili interni.
+- Blindatura di internal.finance: Se l'URL richiesto punta al dominio 
+  protetto 'internal.finance', il sistema verifica la sessione di Auth. 
+- Se l'utente non è autenticato o possiede un ruolo non amministrativo 
+  (es. 'writer'), la richiesta viene terminata immediatamente tramite 
+  un blocco pulito di eccezione:
+  * abort(403, 'Access Denied: You do not have administrator privileges.')
+- Viene contestualmente generato un alert di audit ad alta priorità:
+  * Log::alert("SSRF_ROLE_VIOLATION: user email [...] attempted to force...")
+
+-----------------------------------------------------------------
+3. CORREZIONE DELLA MISCONFIGURATION CORS (config/cors.php)
+-----------------------------------------------------------------
+- Rimozione Wildcard Insecure: Rimossa completamente la wildcard ['*'] 
+  dalle voci degli 'allowed_origins' e dagli 'paths' globali.
+- Restrizione dei Percorsi: Limitata l'applicazione delle policy di 
+  scambio esclusivamente ai percorsi API ('api/*', 'sanctum/csrf-cookie').
+- Collegamento Dinamico all'Infrastruttura: Configurato il parametro 
+  'allowed_origins' per leggere dinamicamente la variabile d'ambiente 
+  di produzione config('app.url') (http://cyber.blog:8000), impedendo 
+  a siti web malevoli di effettuare chiamate asincrone cross-origin.
+=================================================================
+FINE DEL RAPPORTO - CHALLENGE 4
+=================================================================
